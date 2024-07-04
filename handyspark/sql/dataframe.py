@@ -842,7 +842,7 @@ class HandyGrouped(GroupedData):
     def __init__(self, jgd, df, *args):
         self._jgd = jgd
         self._df = df
-        self.sql_ctx = df.sql_ctx
+        self.sql_ctx = df.sparkSession
         self._cols = args
 
     def agg(self, *exprs):
@@ -912,7 +912,7 @@ class HandyFrame(DataFrame):
     """
 
     def __init__(self, df, handy=None):
-        super().__init__(df._jdf, df.sql_ctx)
+        super().__init__(df._jdf, df.sparkSession)
         if handy is None:
             handy = Handy(self)
         else:

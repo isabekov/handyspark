@@ -2,7 +2,7 @@ import pandas as pd
 from operator import itemgetter
 from handyspark.plot import roc_curve, pr_curve
 from pyspark.mllib.evaluation import BinaryClassificationMetrics, MulticlassMetrics
-from pyspark.sql import SQLContext, DataFrame, functions as F
+from pyspark.sql import SparkSession, DataFrame, functions as F
 from pyspark.sql.types import StructField, StructType, DoubleType
 
 def thresholds(self):
@@ -70,7 +70,7 @@ def getMetricsByThreshold(self):
     pr = self.call2('pr').collect()[1:]
     metrics = list(zip(thresholds, map(itemgetter(0), roc), map(itemgetter(1), roc), map(itemgetter(1), pr)))
     metrics += [(0., 1., 1., 0.)]
-    sql_ctx = SQLContext.getOrCreate(self._sc)
+    sql_ctx = SparkSession(self._sc).builder.getOrCreate()
     df = sql_ctx.createDataFrame(metrics).toDF('threshold', 'fpr', 'recall', 'precision')
     return df
 
@@ -142,7 +142,7 @@ def __init__(self, scoreAndLabels, scoreCol='score', labelCol='label'):
                           .rdd.map(lambda row:(float(row[scoreCol][1]), float(row[labelCol]))))
 
     sc = scoreAndLabels.ctx
-    sql_ctx = SQLContext.getOrCreate(sc)
+    sql_ctx = SparkSession(sc).builder.getOrCreate()
     df = sql_ctx.createDataFrame(scoreAndLabels, schema=StructType([
         StructField("score", DoubleType(), nullable=False),
         StructField("label", DoubleType(), nullable=False)]))
